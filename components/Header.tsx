@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X, ChevronDown, ArrowRight } from 'lucide-react'
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const [mobileExpanded, setMobileExpanded] = useState<string | null>(null)
   const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
@@ -17,22 +20,14 @@ export default function Header() {
 
   useEffect(() => {
     if (isMenuOpen) {
-      const scrollY = window.scrollY
       document.body.style.overflow = 'hidden'
-      document.body.style.position = 'fixed'
-      document.body.style.top = `-${scrollY}px`
-      document.body.style.left = '0'
-      document.body.style.right = '0'
-      return () => {
-        document.body.style.overflow = ''
-        document.body.style.position = ''
-        document.body.style.top = ''
-        document.body.style.left = ''
-        document.body.style.right = ''
-        window.scrollTo(0, scrollY)
-      }
+    } else {
+      document.body.style.overflow = ''
+      setMobileExpanded(null)
     }
-    return () => {}
+    return () => {
+      document.body.style.overflow = ''
+    }
   }, [isMenuOpen])
 
   const navigation = [
@@ -74,7 +69,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="relative z-10 group">
             <span className={`text-lg font-semibold tracking-[-0.02em] transition-all duration-300 ${
-              isScrolled ? 'text-gray-900' : 'text-white'
+              isScrolled || isMenuOpen ? 'text-gray-900' : 'text-white'
             }`}>
               A3Intel
             </span>
@@ -148,53 +143,106 @@ export default function Header() {
             {isMenuOpen ? (
               <X className="w-6 h-6 text-gray-900" />
             ) : (
-              <Menu className={`w-6 h-6 transition-colors duration-200 ${isScrolled ? 'text-gray-900' : 'text-white'}`} />
+              <Menu className={`w-6 h-6 transition-colors duration-200 ${isScrolled || isMenuOpen ? 'text-gray-900' : 'text-white'}`} />
             )}
           </button>
         </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="lg:hidden fixed inset-0 top-[4.5rem] left-0 right-0 bottom-0 bg-white z-40 overflow-y-auto overscroll-contain">
-            <div className="container-wide py-8">
-              {navigation.map((item) => (
-                <div key={item.name} className="border-b border-gray-100">
-                  <Link
-                    href={item.href}
-                    className="block py-4 text-base text-gray-900 font-medium tracking-[0.01em]"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
-                  {item.children && (
-                    <div className="pb-4 pl-4 space-y-2">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.name}
-                          href={child.href}
-                          className="block py-2 text-gray-600 hover:text-blue-600 transition-colors duration-200"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          {child.name}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
+        {/* Mobile Navigation - portaled to body, clean professional design */}
+        {typeof document !== 'undefined' &&
+          isMenuOpen &&
+          createPortal(
+            <AnimatePresence>
+              <motion.div
+                key="mobile-menu"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+                className="lg:hidden fixed inset-0 top-[4.5rem] left-0 right-0 bottom-0 z-[9999] overflow-y-auto overscroll-contain bg-white"
+              >
+                <div className="container-wide py-6">
+                  <div className="divide-y divide-gray-100">
+                    {navigation.map((item) => (
+                      <div key={item.name}>
+                        {item.children ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setMobileExpanded(
+                                  mobileExpanded === item.name ? null : item.name
+                                )
+                              }
+                              className="flex w-full items-center justify-between py-4 text-[15px] font-medium text-gray-900"
+                            >
+                              {item.name}
+                              <motion.span
+                                animate={{
+                                  rotate: mobileExpanded === item.name ? 180 : 0,
+                                }}
+                                transition={{
+                                  duration: 0.25,
+                                  ease: [0.32, 0.72, 0, 1],
+                                }}
+                              >
+                                <ChevronDown className="w-5 h-5 text-gray-400" />
+                              </motion.span>
+                            </button>
+                            <AnimatePresence initial={false}>
+                              {mobileExpanded === item.name && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{
+                                    duration: 0.25,
+                                    ease: [0.32, 0.72, 0, 1],
+                                  }}
+                                  className="overflow-hidden"
+                                >
+                                  <div className="pb-3 pl-1 space-y-0">
+                                    {item.children.map((child) => (
+                                      <Link
+                                        key={child.name}
+                                        href={child.href}
+                                        className="block py-2.5 pl-4 text-[14px] text-gray-600 hover:text-gray-900 transition-colors duration-150"
+                                        onClick={() => setIsMenuOpen(false)}
+                                      >
+                                        {child.name}
+                                      </Link>
+                                    ))}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </>
+                        ) : (
+                          <Link
+                            href={item.href}
+                            className="block py-4 text-[15px] font-medium text-gray-900 hover:text-gray-600 transition-colors duration-150"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            {item.name}
+                          </Link>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="pt-6">
+                    <Link
+                      href="/#contact"
+                      className="block w-full py-3.5 text-center text-[14px] font-semibold text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors duration-150"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Contact Us
+                    </Link>
+                  </div>
                 </div>
-              ))}
-              <div className="pt-8">
-                <Link
-                  href="/#contact"
-                  className="group flex items-center justify-center w-full py-4 font-semibold tracking-tight text-white bg-blue-600 rounded-full shadow-lg shadow-blue-600/25 transition-all duration-300 hover:bg-blue-500"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Contact Us
-                  <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-0.5" />
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
+              </motion.div>
+            </AnimatePresence>,
+            document.body
+          )}
       </nav>
     </header>
   )
