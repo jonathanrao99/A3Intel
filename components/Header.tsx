@@ -15,6 +15,26 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  useEffect(() => {
+    if (isMenuOpen) {
+      const scrollY = window.scrollY
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.left = '0'
+      document.body.style.right = '0'
+      return () => {
+        document.body.style.overflow = ''
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.left = ''
+        document.body.style.right = ''
+        window.scrollTo(0, scrollY)
+      }
+    }
+    return () => {}
+  }, [isMenuOpen])
+
   const navigation = [
     {
       name: 'Solutions',
@@ -45,8 +65,8 @@ export default function Header() {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-      isScrolled 
-        ? 'bg-white/90 backdrop-blur-2xl border-b border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)]' 
+      isScrolled || isMenuOpen
+        ? 'bg-white/95 backdrop-blur-xl border-b border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.06)]'
         : 'bg-transparent'
     }`}>
       <nav className="container-wide">
@@ -135,7 +155,7 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="lg:hidden fixed inset-0 top-[4.5rem] bg-white/98 backdrop-blur-2xl z-40">
+          <div className="lg:hidden fixed inset-0 top-[4.5rem] left-0 right-0 bottom-0 bg-white z-40 overflow-y-auto overscroll-contain">
             <div className="container-wide py-8">
               {navigation.map((item) => (
                 <div key={item.name} className="border-b border-gray-100">
