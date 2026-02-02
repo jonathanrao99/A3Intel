@@ -49,14 +49,14 @@ function EnterpriseClientCard({ name }: { name: string }) {
 }
 
 export default function Clients() {
-  // Government seals: Wikimedia Commons (public domain). Alternate paths where original didn't load; referrerPolicy on img.
+  // Government seals: local assets (reliable in production; Wikimedia hotlinking can fail on Vercel)
   const governmentClients = [
-    { name: "Virginia IT Agency", abbr: "VITA", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Seal_of_Virginia.svg/200px-Seal_of_Virginia.svg.png" },
-    { name: "State of Colorado", abbr: "CO", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Colorado-StateSeal.svg/200px-Colorado-StateSeal.svg.png" },
-    { name: "State of Connecticut", abbr: "CT", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Seal_of_Connecticut.svg/200px-Seal_of_Connecticut.svg.png" },
-    { name: "State of Michigan", abbr: "MI", logo: "https://upload.wikimedia.org/wikipedia/commons/4/4f/Michigan_state_seal.png" },
-    { name: "State of Oregon", abbr: "OR", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Seal_of_Oregon.svg/200px-Seal_of_Oregon.svg.png" },
-    { name: "City of Atlanta", abbr: "ATL", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Seal_of_Atlanta.png/200px-Seal_of_Atlanta.png" },
+    { name: "Virginia IT Agency", abbr: "VITA", logo: "/images/seals/vita.svg" },
+    { name: "State of Colorado", abbr: "CO", logo: "/images/seals/co.svg" },
+    { name: "State of Connecticut", abbr: "CT", logo: "/images/seals/ct.svg" },
+    { name: "State of Michigan", abbr: "MI", logo: "/images/seals/mi.svg" },
+    { name: "State of Oregon", abbr: "OR", logo: "/images/seals/or.svg" },
+    { name: "City of Atlanta", abbr: "ATL", logo: "/images/seals/atl.svg" },
   ]
 
   const enterpriseClients = [
